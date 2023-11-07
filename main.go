@@ -1,46 +1,72 @@
 package main
 
 import (
-	"fmt"
-	"io"
-	"log"
+	"context"
 	"log/slog"
 	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
+
+	"github.com/codewithhoa/building-microservice-with-go/handlers"
 )
 
 func main() {
-
-	l := slog.New(slog.Default().Handler())
-
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		l.Info("insight root handler")
-	})
-
-	http.HandleFunc("/hello", func(w http.ResponseWriter, r *http.Request) {
-		l.Info("insight hello handler")
-		body, err := io.ReadAll(r.Body)
-		// err = errors.New("something went wrong")
-		if err != nil {
-			// w.Write([]byte(err.Error()))
-			// w.WriteHeader(http.StatusInternalServerError)
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		// fmt.Println(string(body))
-		// fmt.Println(r.UserAgent())
-		res := fmt.Sprintf("Hello %s", string(body))
-
-		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(res))
-		return
-	})
-
-	http.HandleFunc("/goodbye", func(w http.ResponseWriter, r *http.Request) {
-		l.Info("insight goodbye handler")
-	})
-
-	if err := http.ListenAndServe(":9090", nil); err != nil {
-
-		log.Fatalln(err)
+	slogOpts := slog.HandlerOptions{
+		AddSource: false,
+		Level:     slog.Level(slog.LevelInfo),
 	}
+
+	var slogHandler slog.Handler = slog.NewTextHandler(os.Stdout, &slogOpts)
+
+	slogHandler = slogHandler.WithAttrs([]slog.Attr{
+		{
+			Key:   "app-name",
+			Value: slog.AnyValue("todo-api"),
+		},
+		{
+			Key:   "app-version",
+			Value: slog.AnyValue("v0.0.1"),
+		},
+	})
+
+	logger := slog.New(slogHandler)
+
+	rootHandler := handlers.NewRootHandler(logger)
+	helloHandler := handlers.NewHelloHandler(logger)
+	goodbyeHandler := handlers.NewGoodbyeHandler(logger)
+
+	sm := http.NewServeMux()
+
+	sm.Handle("/", rootHandler)
+	sm.Handle("/hello", helloHandler)
+	sm.Handle("/goodbye", goodbyeHandler)
+
+	s := &http.Server{
+		Addr:         ":9090",
+		Handler:      sm,
+		ReadTimeout:  1 * time.Second,
+		WriteTimeout: 1 * time.Second,
+		IdleTimeout:  120 * time.Second,
+	}
+	go func() {
+		logger.Info("Starting server on port 9090")
+		if err := s.ListenAndServe(); err != nil {
+			logger.Error(err.Error())
+			os.Exit(1)
+		}
+	}()
+
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
+
+	sig := <-sigChan
+
+	logger.Info("received signal, starting graceful shutdown", "sig", sig)
+
+	ctx, ctxCancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer ctxCancel()
+
+	s.Shutdown(ctx)
 }

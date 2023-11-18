@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	"log/slog"
+	"log"
 	"net/http"
 	"os"
 	"os/signal"
@@ -10,23 +10,25 @@ import (
 	"time"
 
 	"github.com/codewithhoa/building-microservice-with-go/handlers"
+	"github.com/codewithhoa/building-microservice-with-go/pkg/config"
+	"github.com/codewithhoa/building-microservice-with-go/pkg/logger"
 )
 
 func main() {
-	slogOpts := slog.HandlerOptions{
-		AddSource: false,
-		Level:     slog.Level(slog.LevelInfo),
+
+	// Load config environment
+	cf, err := config.LoadConfig()
+	if err != nil {
+		log.Fatal("can not get config")
+		return
 	}
 
-	var slogHandler slog.Handler = slog.NewTextHandler(os.Stdout, &slogOpts)
-
-	// Add attribute that should be included in all the logs being generated.
-	slogHandler = slogHandler.WithAttrs([]slog.Attr{
-		slog.String("app-name", "product-api"),
-		slog.String("app-version", "v0.0.1"),
-	})
-
-	logger := slog.New(slogHandler)
+	// Init logger
+	logger, err := logger.NewLogger(cf)
+	if err != nil {
+		log.Fatal("can not run logger")
+		return
+	}
 
 	rootHandler := handlers.NewRootHandler(logger)
 	helloHandler := handlers.NewHelloHandler(logger)
@@ -38,7 +40,7 @@ func main() {
 	sm.Handle("/", rootHandler)
 	sm.Handle("/hello", helloHandler)
 	sm.Handle("/goodbye", goodbyeHandler)
-	sm.Handle("/products", productHandler)
+	sm.Handle("/products/", productHandler)
 
 	// Config for server
 	s := &http.Server{
@@ -68,5 +70,8 @@ func main() {
 	ctx, ctxCancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer ctxCancel()
 
-	s.Shutdown(ctx)
+	err = s.Shutdown(ctx)
+	if err != nil {
+		panic("error from shutdown")
+	}
 }

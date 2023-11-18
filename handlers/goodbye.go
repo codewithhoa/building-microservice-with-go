@@ -19,5 +19,4 @@ func NewGoodbyeHandler(l *slog.Logger) *goodbye {
 
 func (g *goodbye) ServeHTTP(rw http.ResponseWriter, rq *http.Request) {
 	g.l.Info("insight goodbye handler")
-	return
 }

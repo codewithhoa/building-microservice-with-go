@@ -19,5 +19,4 @@ func NewRootHandler(l *slog.Logger) *root {
 
 func (r *root) ServeHTTP(rw http.ResponseWriter, rq *http.Request) {
 	r.l.Info("insight root handler")
-	return
 }

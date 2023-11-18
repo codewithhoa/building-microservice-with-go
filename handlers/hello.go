@@ -34,6 +34,8 @@ func (h *hello) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	res := fmt.Sprintf("Hello %s", string(body))
 
 	rw.WriteHeader(http.StatusOK)
-	rw.Write([]byte(res))
-	return
+	_, err = rw.Write([]byte(res))
+	if err != nil {
+		http.Error(rw, err.Error(), http.StatusInternalServerError)
+	}
 }

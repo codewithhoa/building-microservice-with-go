@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -12,6 +13,7 @@ import (
 	"github.com/codewithhoa/building-microservice-with-go/handlers"
 	"github.com/codewithhoa/building-microservice-with-go/pkg/config"
 	"github.com/codewithhoa/building-microservice-with-go/pkg/logger"
+	"github.com/gorilla/mux"
 )
 
 func main() {
@@ -30,48 +32,58 @@ func main() {
 		return
 	}
 
-	rootHandler := handlers.NewRootHandler(logger)
-	helloHandler := handlers.NewHelloHandler(logger)
-	goodbyeHandler := handlers.NewGoodbyeHandler(logger)
 	productHandler := handlers.NewProductsHandler(logger)
 
-	sm := http.NewServeMux()
+	r := mux.NewRouter()
 
-	sm.Handle("/", rootHandler)
-	sm.Handle("/hello", helloHandler)
-	sm.Handle("/goodbye", goodbyeHandler)
-	sm.Handle("/products/", productHandler)
+	getProducts := r.Methods(http.MethodGet).Subrouter()
+	getProducts.HandleFunc("/products", productHandler.GetProducts)
+
+	postProducts := r.Methods(http.MethodPost).Subrouter()
+	postProducts.HandleFunc("/products", productHandler.AddProduct)
+	postProducts.Use(productHandler.MiddlewareProductValidation)
+
+	putProducts := r.Methods(http.MethodPut).Subrouter()
+	putProducts.HandleFunc("/products/{id:[0-9]+}", productHandler.UpdateProduct)
+	putProducts.Use(productHandler.MiddlewareProductValidation)
 
 	// Config for server
-	s := &http.Server{
-		Addr:         ":9090",
-		Handler:      sm,
+	srv := &http.Server{
+		Addr: ":9090",
+		// Good practice to set timeouts to avoid Slowloris attacks.
+		Handler:      r,
 		ReadTimeout:  5 * time.Second,   // max time to read request from the client
 		WriteTimeout: 10 * time.Second,  // max time to write response to the client
 		IdleTimeout:  120 * time.Second, // max time for connections using TCP Keep-Alive
 	}
 
+	// Run our server in a goroutine so that it doesn't block.
 	go func() {
-		logger.Info("Starting server on port 9090")
-		if err := s.ListenAndServe(); err != nil {
+		logger.Info(fmt.Sprintf("Starting server on port %s", cf.ServerAddress))
+		if err := srv.ListenAndServe(); err != nil {
 			logger.Error(err.Error())
-			os.Exit(1)
 		}
 	}()
 
-	// Implement gracefully shutdown
 	sigChan := make(chan os.Signal, 1)
+	// We'll accept graceful shutdowns when quit via SIGINT (Ctrl+C)
+	// SIGKILL, SIGQUIT or SIGTERM (Ctrl+/) will not be caught.
 	signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
 
+	// Block until we receive our signal.
 	sig := <-sigChan
 
 	logger.Info("received signal, starting graceful shutdown", "sig", sig)
 
-	ctx, ctxCancel := context.WithTimeout(context.Background(), 30*time.Second)
+	ctx, ctxCancel := context.WithTimeout(context.Background(), cf.ServerGracefulTimeout)
 	defer ctxCancel()
 
-	err = s.Shutdown(ctx)
+	err = srv.Shutdown(ctx)
 	if err != nil {
-		panic("error from shutdown")
+		logger.Error("error from shutdown")
+		os.Exit(0)
 	}
+
+	logger.Info("shutdown successfully")
+	os.Exit(0)
 }

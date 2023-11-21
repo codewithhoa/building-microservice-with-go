@@ -43,7 +43,7 @@ get-products:
 	curl -X GET $(END_POINT) | jq
 
 post-product:
-	curl -X POST $(END_POINT) -H "Content-Type: application/json" -d $(DATA) | jq 
+	curl -v -X POST $(END_POINT) -H "Content-Type: application/json" -d $(DATA) 
 
 put-product:
 	curl -v -X PUT $(END_POINT)/$(id) -H "Content-Type: application/json" -d $(DATA) | jq 

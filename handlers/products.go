@@ -107,8 +107,15 @@ func (p *Products) MiddlewareProductValidation(next http.Handler) http.Handler {
 
 		p.l.Debug(fmt.Sprintf("type of a is %T\n", prod))
 		if err != nil {
-			p.l.Error(ErrInvalidProductId.Error(), slog.String("err", err.Error()))
-			http.Error(w, ErrUnMarshalJSON.Error(), http.StatusBadRequest)
+			p.l.Error(ErrInvalidProductInput.Error(), slog.String("err", err.Error()))
+			http.Error(w, ErrInvalidProductId.Error(), http.StatusBadRequest)
+			return
+		}
+
+		// validate product
+		if err := prod.Validate(); err != nil {
+			p.l.Error(ErrInvalidProductInput.Error(), slog.String("err", err.Error()))
+			http.Error(w, ErrInvalidProductInput.Error(), http.StatusBadRequest)
 			return
 		}
 

@@ -10,7 +10,9 @@ func TestCheckValidation(t *testing.T) {
 		SKU:   "dddd-dddd-dddd",
 	}
 
-	err := p.Validate()
+	validation := NewValidation()
+
+	err := validation.Validate(p)
 	if err != nil {
 		t.Fatal(err)
 	}

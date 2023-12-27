@@ -1,5 +1,5 @@
 # This script allow change go module name
-# and automate change old path from import statement
+# and automatically change old path from import statement in all .go file
 # ref:
 # - https://gist.github.com/iamucil/7578dc7df7d72e1d78c8f5543db3fbcc
 # - https://www.cyberciti.biz/faq/how-to-use-sed-to-find-and-replace-text-in-files-in-linux-unix-shell/

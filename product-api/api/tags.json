@@ -1,0 +1,16 @@
+{
+  "tags": [
+    {
+      "name": "products",
+      "description": "Everything about the product",
+      "externalDocs": {
+        "description": "Find out more",
+        "url": "http://swagger.io"
+      }
+    },
+    {
+      "name": "Tag definition",
+      "description": "Change it in ./api/tags.json"
+    }
+  ]
+}

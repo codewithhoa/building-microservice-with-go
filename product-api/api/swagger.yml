@@ -1,0 +1,462 @@
+basePath: /v1
+consumes:
+    - application/json
+    - multipart/form-data
+definitions:
+    Error:
+        properties:
+            error:
+                description: The Error is error name
+                example: '"required"'
+                type: string
+                x-go-name: Error
+            field:
+                description: The Field is name of the field that make an error
+                example: '"field1"'
+                type: string
+                x-go-name: Field
+        type: object
+        x-go-package: github.com/codewithhoa/building-microservice-with-go/product-api/docs
+    ErrorResponses:
+        properties:
+            code:
+                description: The Code is code name of the error
+                example: '"CREATE_BODY_INVALID"'
+                type: string
+                x-go-name: Code
+            error:
+                description: The Error is general error
+                example: '"field1: required, field2: greater than 10"'
+                type: string
+                x-go-name: Error
+            errors:
+                description: The Errors is list of errors
+                example:
+                    - error: required
+                      field: field1
+                items:
+                    $ref: '#/definitions/Error'
+                type: array
+                x-go-name: Errors
+            traceID:
+                description: The TraceID for tracking the error
+                example: '"u8357577235577jdrf9083227"'
+                type: string
+                x-go-name: TraceID
+        type: object
+        x-go-package: github.com/codewithhoa/building-microservice-with-go/product-api/docs
+    MetaData:
+        description: MetaData defines the structure for meta data
+        properties:
+            hasNext:
+                description: The HasNext is true if have result in the next page
+                example: true
+                type: boolean
+                x-go-name: HasNext
+            page:
+                description: The Page is page which user want retrieve
+                example: 2
+                format: int64
+                minimum: 1
+                type: integer
+                x-go-name: Page
+            pageSize:
+                description: The PageSize is total items of one page
+                example: 10
+                format: int64
+                minimum: 1
+                type: integer
+                x-go-name: PageSize
+            sort:
+                description: The sort
+                example:
+                    - +createdAt
+                    - -name
+                items:
+                    type: string
+                type: array
+                x-go-name: Sort
+            totalPages:
+                description: The TotalPages is total of page
+                example: 100
+                format: int64
+                type: integer
+                x-go-name: TotalPages
+            totalRecords:
+                description: The TotalRecords is total records
+                example: 1000
+                format: int64
+                type: integer
+                x-go-name: TotalRecords
+        type: object
+        x-go-package: github.com/codewithhoa/building-microservice-with-go/product-api/docs
+    Product:
+        description: Product defines the structure for an API product
+        properties:
+            createdOn:
+                description: The time when product is created
+                format: date
+                type: string
+                x-go-name: CreatedOn
+            deletedOn:
+                description: The time when product is deleted
+                format: date
+                type: string
+                x-go-name: DeletedOn
+            description:
+                description: The description of the product
+                maxLength: 1000
+                type: string
+                x-go-name: Description
+            id:
+                description: The id for the product
+                format: int64
+                minimum: 1
+                type: integer
+                x-go-name: ID
+            name:
+                description: The name of the product
+                maxLength: 255
+                type: string
+                x-go-name: Name
+            price:
+                description: The price of the product
+                format: double
+                minimum: 0.01
+                type: number
+                x-go-name: Price
+            sku:
+                description: The SKU of the product
+                pattern: '[a-z]+-[a-z]+-[a-z]+'
+                type: string
+                x-go-name: SKU
+            updatedOn:
+                description: The time when product is updated
+                format: date
+                type: string
+                x-go-name: UpdatedOn
+        required:
+            - name
+            - description
+            - price
+            - sku
+        type: object
+        x-go-package: github.com/codewithhoa/building-microservice-with-go/product-api/data
+    ProductParams:
+        properties:
+            description:
+                description: Description for product
+                example: Awesome coffee for your new day.
+                maxLength: 255
+                type: string
+                x-go-name: Description
+            name:
+                description: Name of product
+                example: Cappuccino coffee
+                maxLength: 100
+                type: string
+                x-go-name: Name
+            price:
+                description: Price of product in dollar
+                example: 12
+                format: double
+                minimum: 1
+                type: number
+                x-go-name: Price
+            sku:
+                description: |-
+                    SKU of product
+                    following format: xxx-xxx-xxx
+                example: aaa-vvv-aaa
+                pattern: '[a-z]+-[a-z]+-[a-z]+'
+                type: string
+                x-go-name: SKU
+        required:
+            - name
+            - description
+            - price
+            - sku
+        type: object
+        x-go-package: github.com/codewithhoa/building-microservice-with-go/product-api/docs
+    ProductsResponse:
+        properties:
+            description:
+                description: Description for product
+                example: Awesome coffee for your new day.
+                type: string
+                x-go-name: Description
+            id:
+                description: ID of product in system
+                example: 123
+                format: int64
+                type: integer
+                x-go-name: ID
+            name:
+                description: Name of product
+                example: Cappuccino coffee
+                type: string
+                x-go-name: Name
+            price:
+                description: Price of product in dollar
+                example: 12
+                format: double
+                type: number
+                x-go-name: Price
+            sku:
+                description: |-
+                    SKU of product
+                    following format: xxx-xxx-xxx
+                example: 123-123-123
+                type: string
+                x-go-name: SKU
+        type: object
+        x-go-package: github.com/codewithhoa/building-microservice-with-go/product-api/docs
+    SuccessListProductsResponses:
+        properties:
+            data:
+                items:
+                    $ref: '#/definitions/ProductsResponse'
+                type: array
+                x-go-name: Data
+            metadata:
+                $ref: '#/definitions/MetaData'
+        type: object
+        x-go-package: github.com/codewithhoa/building-microservice-with-go/product-api/docs
+    SuccessSingleProductResponses:
+        properties:
+            data:
+                $ref: '#/definitions/ProductsResponse'
+        type: object
+        x-go-package: github.com/codewithhoa/building-microservice-with-go/product-api/docs
+host: localhost:9090/api
+info:
+    contact:
+        email: vukieuhaihoa@gmail.com
+        name: Hai Hoa
+    description: |-
+        the purpose of this application is to provide an application
+        that is using plain go code to define an API
+
+        This should demonstrate all the possible comment annotations
+        that are available to turn go code into a fully compliant swagger 2.0 spec
+    license:
+        name: MIT
+        url: http://opensource.org/licenses/MIT
+    termsOfService: there are no TOS at this moment, use at your own risk we take no responsibility
+    title: Product API.
+paths:
+    /products:
+        get:
+            consumes:
+                - application/json
+            description: |-
+                Return a list of product from the database.
+                Note: You can get the products that are out of stock.
+            operationId: listProducts
+            parameters:
+                - description: The PageSize is total items of one page
+                  example: 10
+                  format: int64
+                  in: query
+                  minimum: 1
+                  name: pageSize
+                  type: integer
+                  x-go-name: PageSize
+                - description: The Page is page which user want retrieve
+                  example: 2
+                  format: int64
+                  in: query
+                  minimum: 1
+                  name: page
+                  type: integer
+                  x-go-name: Page
+                - description: The sort
+                  example:
+                    - +createdAt
+                    - -name
+                  in: query
+                  items:
+                    type: string
+                  name: sort
+                  type: array
+                  x-go-name: Sort
+            produces:
+                - application/json
+            responses:
+                "200":
+                    $ref: '#/responses/SuccessListProductsResponsesWrapper'
+                "500":
+                    $ref: '#/responses/ErrorResponsesWrapper'
+                default:
+                    $ref: '#/responses/SuccessListProductsResponsesWrapper'
+            schemes:
+                - http
+            summary: Returns all products
+            tags:
+                - products
+        post:
+            consumes:
+                - application/json
+            description: This will add a product to database of system.
+            operationId: postProduct
+            parameters:
+                - description: Product object that needs to be added to the database
+                  in: body
+                  name: body
+                  required: true
+                  schema:
+                    $ref: '#/definitions/ProductParams'
+                  x-go-name: Body
+            produces:
+                - application/json
+            responses:
+                "201":
+                    $ref: '#/responses/NoContentResponsesWrapper'
+                "400":
+                    $ref: '#/responses/ErrorResponsesWrapper'
+                "500":
+                    $ref: '#/responses/ErrorResponsesWrapper'
+                default:
+                    $ref: '#/responses/NoContentResponsesWrapper'
+            schemes:
+                - http
+            summary: Add a new product to DB
+            tags:
+                - products
+    /products/{id}:
+        delete:
+            consumes:
+                - application/json
+            operationId: deleteProduct
+            parameters:
+                - description: The id of the product that you want to do somethings on it.
+                  example: 1
+                  format: int64
+                  in: path
+                  name: id
+                  required: true
+                  type: integer
+                  x-go-name: ID
+            produces:
+                - application/json
+            responses:
+                "204":
+                    $ref: '#/responses/NoContentResponsesWrapper'
+                "400":
+                    $ref: '#/responses/ErrorInvalidIDSuppliedResponsesWrapper'
+                "404":
+                    $ref: '#/responses/ErrorNotFoundResponsesWrapper'
+                "500":
+                    $ref: '#/responses/ErrorResponsesWrapper'
+                default:
+                    $ref: '#/responses/NoContentResponsesWrapper'
+            schemes:
+                - http
+            summary: Delete an existing product by ID
+            tags:
+                - products
+        get:
+            consumes:
+                - application/json
+            description: Return a product by ID from request.
+            operationId: listSingleProduct
+            parameters:
+                - description: The id of the product that you want to do somethings on it.
+                  example: 1
+                  format: int64
+                  in: path
+                  name: id
+                  required: true
+                  type: integer
+                  x-go-name: ID
+            produces:
+                - application/json
+            responses:
+                "200":
+                    $ref: '#/responses/SuccessSingleProductResponsesWrapper'
+                "400":
+                    $ref: '#/responses/ErrorInvalidIDSuppliedResponsesWrapper'
+                "404":
+                    $ref: '#/responses/ErrorNotFoundResponsesWrapper'
+                "500":
+                    $ref: '#/responses/ErrorResponsesWrapper'
+                default:
+                    $ref: '#/responses/SuccessSingleProductResponsesWrapper'
+            schemes:
+                - http
+            summary: Finds a product by ID
+            tags:
+                - products
+        put:
+            consumes:
+                - application/json
+            description: This operation will updates an existing product by ID.
+            operationId: putProduct
+            parameters:
+                - description: The id of the product that you want to do somethings on it.
+                  example: 1
+                  format: int64
+                  in: path
+                  name: id
+                  required: true
+                  type: integer
+                  x-go-name: ID
+                - description: Product object that needs to be added to the database
+                  in: body
+                  name: body
+                  required: true
+                  schema:
+                    $ref: '#/definitions/ProductParams'
+                  x-go-name: Body
+            produces:
+                - application/json
+            responses:
+                "201":
+                    $ref: '#/responses/NoContentResponsesWrapper'
+                "400":
+                    $ref: '#/responses/ErrorResponsesWrapper'
+                "500":
+                    $ref: '#/responses/ErrorResponsesWrapper'
+                default:
+                    $ref: '#/responses/NoContentResponsesWrapper'
+            schemes:
+                - http
+            summary: Updates an existing product by ID
+            tags:
+                - products
+produces:
+    - application/json
+responses:
+    ErrorInvalidIDSuppliedResponsesWrapper:
+        description: invalid ID supplied
+        schema:
+            $ref: '#/definitions/ErrorResponses'
+    ErrorNotFoundResponsesWrapper:
+        description: not found error
+        schema:
+            $ref: '#/definitions/ErrorResponses'
+    ErrorResponsesWrapper:
+        description: internal error occur in server
+        schema:
+            $ref: '#/definitions/ErrorResponses'
+    NoContentResponsesWrapper:
+        description: successful operation and no data to return.
+    SuccessListProductsResponsesWrapper:
+        description: successful operation
+        schema:
+            $ref: '#/definitions/SuccessListProductsResponses'
+    SuccessSingleProductResponsesWrapper:
+        description: successful operation
+        schema:
+            $ref: '#/definitions/SuccessSingleProductResponses'
+schemes:
+    - http
+swagger: "2.0"
+tags:
+    - description: Everything about the product
+      externalDocs:
+        description: Find out more
+        url: http://swagger.io
+      name: products
+    - description: Change it in ./api/tags.json
+      name: Tag definition

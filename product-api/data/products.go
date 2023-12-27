@@ -1,60 +1,72 @@
 package data
 
 import (
-	"encoding/json"
 	"errors"
-	"io"
-	"regexp"
 	"time"
-
-	"github.com/go-playground/validator/v10"
 )
 
 var (
+	// ErrProductNotFound is an error raised when a product can not be found in the database
 	ErrProductNotFound = errors.New("product not found")
 )
 
+// Product defines the structure for an API product
+// swagger:model
 type Product struct {
-	ID          int       `json:"id"`
-	Name        string    `json:"name" validate:"required"`
-	Description string    `json:"description"`
-	Price       float64   `json:"price" validate:"gt=0"`
-	SKU         string    `json:"sku" validate:"required,sku"`
-	CreatedOn   time.Time `json:"-"`
-	UpdatedOn   time.Time `json:"-"`
-	DeletedOn   time.Time `json:"-"`
+	// The id for the product
+	//
+	// required: false
+	// min: 1
+	ID int `json:"id"` // Unique identifier for the product
+
+	// The name of the product
+	//
+	// required: true
+	// max length: 255
+	Name string `json:"name" validate:"required"`
+
+	// The description of the product
+	//
+	// required: true
+	// max length: 1000
+	Description string `json:"description"`
+
+	// The price of the product
+	//
+	// required: true
+	// min: 0.01
+	Price float64 `json:"price" validate:"gt=0"`
+
+	// The SKU of the product
+	//
+	// required: true
+	// pattern: [a-z]+-[a-z]+-[a-z]+
+	SKU string `json:"sku" validate:"required,sku"`
+
+	// The time when product is created
+	//
+	// required: false
+	// swagger:strfmt date
+	CreatedOn time.Time `json:"createdOn"`
+
+	// The time when product is updated
+	//
+	// required: false
+	// swagger:strfmt date
+	UpdatedOn time.Time `json:"updatedOn"`
+
+	// The time when product is deleted
+	//
+	// required: false
+	// swagger:strfmt date
+	DeletedOn time.Time `json:"deletedOn"`
 }
 
-func (p *Product) FromJSON(r io.Reader) error {
-	e := json.NewDecoder(r)
-	return e.Decode(p)
-}
-
-func (p *Product) Validate() error {
-	validate := validator.New()
-	validate.RegisterValidation("sku", validateSKU)
-
-	return validate.Struct(p)
-}
-
-// validateSKU implement validator.Func
-func validateSKU(fl validator.FieldLevel) bool {
-	// *: This line may be suddenly interrupt app because it can panic
-	re := regexp.MustCompile(`[a-z]+-[a-z]+-[a-z]+`)
-
-	// find all match string
-	matches := re.FindAllString(fl.Field().String(), -1)
-	return len(matches) == 1
-}
-
+// Products defines a slice of Product(pointer of a Product)
 type Products []*Product
 
-func (p *Products) ToJSON(w io.Writer) error {
-	e := json.NewEncoder(w)
-
-	return e.Encode(p)
-}
-
+// In-memory database for the system
+// TODO: Please use real DB If you have time.
 var productList = []*Product{
 	{
 		ID:          1,
@@ -76,9 +88,22 @@ var productList = []*Product{
 	},
 }
 
-// GetProducts returns a list of products
+// GetProducts returns a list of products from the database
 func GetProducts() (Products, error) {
+	// return nil, ErrProductNotFound
 	return productList, nil
+}
+
+// GetProductByID returns a single product which matches the id from the
+// database.
+// If a product is not found this func returns a ErrProductNotFound error
+func GetProductByID(id int) (*Product, error) {
+	pos := findProductByID(id)
+	if pos == -1 {
+		return nil, ErrProductNotFound
+	}
+
+	return productList[pos], nil
 }
 
 // AddProduct add a new product to product list
@@ -101,10 +126,13 @@ func getNextID() int {
 	return lp.ID + 1
 }
 
-func UpdateProductById(id int, p *Product) error {
-	_, pos, err := findProductById(id)
-	if err != nil {
-		return err
+// UpdateProductByID updates a product by given id.
+// If a product with the given id does not exist in the DB,
+// this func return a ErrProductNotFound error.
+func UpdateProductByID(id int, p *Product) error {
+	pos := findProductByID(id)
+	if pos == -1 {
+		return ErrProductNotFound
 	}
 
 	now := time.Now().UTC()
@@ -114,13 +142,27 @@ func UpdateProductById(id int, p *Product) error {
 	return nil
 }
 
-// findProductById
-func findProductById(id int) (*Product, int, error) {
+// DeleteProductByID deletes a product by give id.
+// If a product with the given id does not exist in the DB,
+// this func return a ErrProductNotFound error.
+func DeleteProductByID(id int) error {
+	pos := findProductByID(id)
+	if pos == -1 {
+		return ErrProductNotFound
+	}
+
+	productList = append(productList[:pos], productList[pos+1:]...)
+	return nil
+}
+
+// findProductByID return the index of a product in the database if matching ID
+// return -1 when no product matching with an given id.
+func findProductByID(id int) int {
 	for i, product := range productList {
 		if product.ID == id {
-			return product, i, nil
+			return i
 		}
 	}
 
-	return nil, 0, ErrProductNotFound
+	return -1
 }

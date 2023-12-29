@@ -47,17 +47,17 @@ func NewValidation() *Validation {
 }
 
 func (v *Validation) Validate(i any) ValidationErrors {
-	errs := v.validate.Struct(i)
-	if errs == nil {
+	errs, ok := v.validate.Struct(i).(validator.ValidationErrors)
+	if !ok {
 		return nil
 	}
 
-	if len(errs.(validator.ValidationErrors)) == 0 {
+	if len(errs) == 0 {
 		return nil
 	}
 
 	var returnErrs []ValidationError
-	for _, err := range errs.(validator.ValidationErrors) {
+	for _, err := range errs {
 		ve := ValidationError{err}
 		returnErrs = append(returnErrs, ve)
 	}

@@ -27,7 +27,7 @@ func (p *Products) MiddlewareProductValidation(next http.Handler) http.Handler {
 		// p.l.Debug(fmt.Sprintf("type of a is %T\n", prod))
 		if err != nil {
 			p.l.Error(ErrDeserializingProduct.Error(), slog.String("err", err.Error()))
-			http.Error(w, ErrDeserializingProduct.Error(), http.StatusBadRequest)
+			p.responseJSON(w, http.StatusBadRequest, response.SimpleErrorResponse(ErrUnMarshalJSON, ErrUnMarshalJSONCode))
 			return
 		}
 
@@ -35,7 +35,6 @@ func (p *Products) MiddlewareProductValidation(next http.Handler) http.Handler {
 		if errs := p.v.Validate(prod); len(errs) != 0 {
 			fmt.Println("[ERROR] deserializing product", errs)
 			p.l.Error(ErrInvalidProductInput.Error(), slog.Any("err", errs.Errors()))
-			// http.Error(w, ErrInvalidProductInput.Error(), http.StatusBadRequest)
 			var errFieldList []response.ErrorField
 
 			for _, v := range errs {

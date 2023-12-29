@@ -45,7 +45,6 @@ func (p *Products) Post(rw http.ResponseWriter, rq *http.Request) {
 	err := data.AddProduct(prod)
 	if err != nil {
 		p.l.Error(err.Error())
-		// http.Error(rw, ErrAddProduct.Error(), http.StatusInternalServerError)
 
 		p.responseJSON(rw, http.StatusInternalServerError, response.SimpleErrorResponse(err, err.Error()))
 		return

@@ -10,18 +10,19 @@
 //
 // there are no TOS at this moment, use at your own risk we take no responsibility
 //
-//				Schemes: http
-//				Host: localhost:9090/api
-//				BasePath: /v1
-//				License: MIT http://opensource.org/licenses/MIT
-//				Contact: Hai Hoa<vukieuhaihoa@gmail.com>
+//					Schemes: http
+//					Host: localhost:9090
+//					BasePath: /api/v1
+//	        Version: 1.0.0
+//					License: MIT http://opensource.org/licenses/MIT
+//					Contact: Hai Hoa<vukieuhaihoa@gmail.com>
 //
-//				Consumes:
-//				- application/json
-//	      - multipart/form-data
+//					Consumes:
+//					- application/json
+//		      - multipart/form-data
 //
-//				Produces:
-//				- application/json
+//					Produces:
+//					- application/json
 //
 // swagger:meta
 package docs
@@ -187,7 +188,6 @@ type ProductIDParamsWrapper struct {
 	// The id of the product that you want to do somethings on it.
 	// in: path
 	// required: true
-	// example: 1
 	ID int `json:"id"`
 }
 
@@ -237,19 +237,16 @@ type ProductQueriesWrapper struct {
 	//
 	// min: 1
 	// in: query
-	// Example: 10
 	PageSize int `json:"pageSize"`
 
 	// The Page is page which user want retrieve
 	//
 	// min: 1
 	// in: query
-	// Example: 2
 	Page int `json:"page"`
 
 	// The sort
 	//
 	// in: query
-	// Example: ["+createdAt", "-name"]
 	Sort []string `json:"sort"`
 }

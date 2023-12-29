@@ -1,4 +1,4 @@
-basePath: /v1
+basePath: /api/v1
 consumes:
     - application/json
     - multipart/form-data
@@ -228,7 +228,7 @@ definitions:
                 $ref: '#/definitions/ProductsResponse'
         type: object
         x-go-package: github.com/codewithhoa/building-microservice-with-go/product-api/docs
-host: localhost:9090/api
+host: localhost:9090
 info:
     contact:
         email: vukieuhaihoa@gmail.com
@@ -244,6 +244,7 @@ info:
         url: http://opensource.org/licenses/MIT
     termsOfService: there are no TOS at this moment, use at your own risk we take no responsibility
     title: Product API.
+    version: 1.0.0
 paths:
     /products:
         get:
@@ -255,7 +256,6 @@ paths:
             operationId: listProducts
             parameters:
                 - description: The PageSize is total items of one page
-                  example: 10
                   format: int64
                   in: query
                   minimum: 1
@@ -263,7 +263,6 @@ paths:
                   type: integer
                   x-go-name: PageSize
                 - description: The Page is page which user want retrieve
-                  example: 2
                   format: int64
                   in: query
                   minimum: 1
@@ -271,9 +270,6 @@ paths:
                   type: integer
                   x-go-name: Page
                 - description: The sort
-                  example:
-                    - +createdAt
-                    - -name
                   in: query
                   items:
                     type: string
@@ -330,7 +326,6 @@ paths:
             operationId: deleteProduct
             parameters:
                 - description: The id of the product that you want to do somethings on it.
-                  example: 1
                   format: int64
                   in: path
                   name: id
@@ -362,7 +357,6 @@ paths:
             operationId: listSingleProduct
             parameters:
                 - description: The id of the product that you want to do somethings on it.
-                  example: 1
                   format: int64
                   in: path
                   name: id
@@ -394,7 +388,6 @@ paths:
             operationId: putProduct
             parameters:
                 - description: The id of the product that you want to do somethings on it.
-                  example: 1
                   format: int64
                   in: path
                   name: id
@@ -411,10 +404,12 @@ paths:
             produces:
                 - application/json
             responses:
-                "201":
+                "204":
                     $ref: '#/responses/NoContentResponsesWrapper'
                 "400":
                     $ref: '#/responses/ErrorResponsesWrapper'
+                "404":
+                    $ref: '#/responses/ErrorNotFoundResponsesWrapper'
                 "500":
                     $ref: '#/responses/ErrorResponsesWrapper'
                 default:

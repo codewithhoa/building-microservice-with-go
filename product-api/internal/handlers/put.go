@@ -67,7 +67,6 @@ func (p *Products) Put(rw http.ResponseWriter, rq *http.Request) {
 			return
 		}
 
-		// http.Error(rw, err.Error(), http.StatusInternalServerError)
 		p.responseJSON(rw, http.StatusInternalServerError, response.SimpleErrorResponse(err, err.Error()))
 		return
 	}
